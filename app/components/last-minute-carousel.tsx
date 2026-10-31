@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 
@@ -137,7 +138,6 @@ export default function LastMinuteCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [maxSlide, setMaxSlide] = useState(LAST_MINUTE_DEALS.length - 1);
   const [loaded, setLoaded] = useState(false);
-  const [bookedId, setBookedId] = useState<string | null>(null);
 
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     initial: 0,
@@ -175,13 +175,6 @@ export default function LastMinuteCarousel() {
 
   const canPrev = loaded && currentSlide > 0;
   const canNext = loaded && currentSlide < maxSlide;
-
-  const handleClaimSpot = (id: string) => {
-    setBookedId(id);
-    setTimeout(() => {
-      setBookedId(null);
-    }, 2800);
-  };
 
   return (
     <section id="last-minute" className="w-full py-16 sm:py-20 px-4 sm:px-6 lg:px-8 border-t border-zinc-200/80 bg-white font-sans" dir="rtl">
@@ -244,7 +237,6 @@ export default function LastMinuteCarousel() {
           className="keen-slider py-2 cursor-grab active:cursor-grabbing select-none"
         >
           {LAST_MINUTE_DEALS.map((deal) => {
-            const isBooked = bookedId === deal.id;
             return (
               <div
                 key={deal.id}
@@ -297,9 +289,11 @@ export default function LastMinuteCarousel() {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-base sm:text-lg font-bold text-zinc-950 group-hover:text-emerald-900 transition-colors line-clamp-1">
-                      {deal.title}
-                    </h3>
+                    <Link href={`/tours/${deal.id}`}>
+                      <h3 className="text-base sm:text-lg font-bold text-zinc-950 group-hover:text-emerald-900 transition-colors line-clamp-1">
+                        {deal.title}
+                      </h3>
+                    </Link>
 
                     {/* Metadata tags */}
                     <div className="flex items-center gap-3 mt-3 text-xs text-zinc-500 font-medium">
@@ -323,17 +317,13 @@ export default function LastMinuteCarousel() {
                       <span className="text-[11px] text-zinc-500 font-medium">تومان / هر نفر</span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleClaimSpot(deal.id)}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                        isBooked
-                          ? "bg-emerald-700 text-white"
-                          : "bg-zinc-950 text-white hover:bg-emerald-900 active:scale-95"
-                      }`}
+                    <Link
+                      href={`/tours/${deal.id}`}
+                      className="px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer bg-zinc-950 text-white hover:bg-emerald-900 active:scale-95 inline-flex items-center gap-1"
                     >
-                      {isBooked ? "✓ جایگاه رزرو شد!" : "رزرو صندلی"}
-                    </button>
+                      <span>رزرو صندلی</span>
+                      <span className="rotate-180">←</span>
+                    </Link>
                   </div>
                 </div>
               </div>

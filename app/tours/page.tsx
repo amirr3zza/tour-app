@@ -717,11 +717,14 @@ export default function ToursPage() {
                           <span className="text-zinc-500 text-[11px]">تومان / نفر</span>
                         </div>
 
-                        <div className="flex items-center gap-1 text-zinc-600">
-                          <span className="text-amber-500 font-bold">★</span>
-                          <span className="font-bold text-zinc-800">{tour.rating}</span>
-                          <span className="text-zinc-400">({tour.reviewsCount})</span>
-                        </div>
+                        <Link
+                          href={`/tours/${tour.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 font-bold hover:bg-emerald-900 hover:text-white transition-all text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>رزرو آنلاین</span>
+                          <span className="rotate-180">←</span>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -912,10 +915,18 @@ export default function ToursPage() {
                   type="button"
                   onClick={() => handleBook(activeModalTour)}
                   disabled={bookingSuccessId === activeModalTour.id}
-                  className="px-6 py-3 rounded-xl bg-emerald-900 text-white text-sm font-bold hover:bg-emerald-800 active:scale-98 transition-all shadow-xs cursor-pointer"
+                  className="px-4 py-3 rounded-xl border border-zinc-200 text-zinc-700 text-xs font-bold hover:bg-zinc-50 active:scale-98 transition-all cursor-pointer"
                 >
-                  {bookingSuccessId === activeModalTour.id ? "جایگاه رزرو شد!" : "رزرو آنلاین جایگاه"}
+                  {bookingSuccessId === activeModalTour.id ? "رزرو شد!" : "رزرو سریع"}
                 </button>
+
+                <Link
+                  href={`/tours/${activeModalTour.id}`}
+                  className="px-5 py-3 rounded-xl bg-emerald-900 text-white text-sm font-bold hover:bg-emerald-800 active:scale-98 transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <span>صفحه کامل و فرم رزرو</span>
+                  <span className="rotate-180">←</span>
+                </Link>
               </div>
             </div>
 

@@ -1,137 +1,61 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { TOURS_DATA, Tour } from "@/app/data/tours";
 
-interface GilanDestination {
-  id: string;
-  title: string;
-  location: string;
-  county: string;
-  category:
-    | "ییلاقات و کوهستان"
-    | "جنگل و طبیعت"
-    | "فرهنگی و تاریخی"
-    | "ساحل و تالاب"
-    | "مزارع و بوم‌گردی";
-  price: string;
-  duration: string;
-  rating: number;
-  reviewsCount: number;
-  imageUrl: string;
-  highlight: string;
-}
-
-const GILAN_DESTINATIONS: GilanDestination[] = [
-  {
-    id: "masal-clouds",
-    title: "ییلاق اولسبلنگاه و اقیانوس رویایی ابر ماسال",
-    location: "ارتفاعات ماسال",
-    county: "ماسال",
-    category: "ییلاقات و کوهستان",
-    price: "۱,۴۵۰,۰۰۰",
-    duration: "۲ روز و ۱ شب",
-    rating: 4.98,
-    reviewsCount: 240,
-    imageUrl:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80",
-    highlight:
-      "تماشای اقیانوس ابر از کلبه‌های تخته‌ای چوبی، آوای دلنشین نی چوپانان تالشی و هوای پاک کوهستان.",
-  },
-  {
-    id: "masouleh-village",
-    title: "روستای کهن و پلکانی ماسوله در مه پاییز و بهار",
-    location: "ماسوله",
-    county: "فومن",
-    category: "فرهنگی و تاریخی",
-    price: "۹۸۰,۰۰۰",
-    duration: "۱ روزه",
-    rating: 4.94,
-    reviewsCount: 310,
-    imageUrl:
-      "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1600&q=80",
-    highlight:
-      "معماری پلکانی زردگون با قدمت هزار ساله، بازارهای سنتی، کافه‌های دنج با کلوچه فومن داغ و چای محلی.",
-  },
-  {
-    id: "rudkhan-castle",
-    title: "دژ نفوذناپذیر قلعه رودخان در دل جنگل‌های هیرکانی",
-    location: "حیدرآلات",
-    county: "فومن",
-    category: "جنگل و طبیعت",
-    price: "۱,۱۵۰,۰۰۰",
-    duration: "۱ روزه",
-    rating: 4.97,
-    reviewsCount: 280,
-    imageUrl:
-      "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=1600&q=80",
-    highlight:
-      "پیمایش پله‌های سنگی در مه انبوه جنگل باستانی، دیواره‌های استوار ساسانی و برج‌های نگهبانی باشکوه.",
-  },
-  {
-    id: "lahijan-tea",
-    title: "باغات زمردین چای و بام سبز لاهیجان",
-    location: "شیطان‌کوه و تپه‌های بیجاربنه",
-    county: "لاهیجان",
-    category: "مزارع و بوم‌گردی",
-    price: "۸۹۰,۰۰۰",
-    duration: "۲ روزه",
-    rating: 4.93,
-    reviewsCount: 195,
-    imageUrl:
-      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1600&q=80",
-    highlight:
-      "قدم زدن در مزارع سرسبز چای بهاره، چای‌نوشی در خانه‌های بوم‌گردی و تله‌کابین احرار بر فراز استخر لاهیجان.",
-  },
-  {
-    id: "anzali-lagoon",
-    title: "قایق‌رانی در میان نیلوفرهای تالاب بین‌المللی انزلی",
-    location: "آبدنگاه و سرخانکل",
-    county: "بندرانزلی",
-    category: "ساحل و تالاب",
-    price: "۱,۲۰۰,۰۰۰",
-    duration: "۱ روزه",
-    rating: 4.92,
-    reviewsCount: 165,
-    imageUrl:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80",
-    highlight:
-      "قایق‌سواری در میان لاله‌های تالابی، پرنده‌نگری لک‌لک‌ها و قوهای مهاجر و طعم ماهی سفید تازه خزر.",
-  },
-  {
-    id: "gisoom-forest",
-    title: "تونل بهشتی جنگل گیسوم و تلاقی با ساحل کاسپین",
-    location: "پره‌سر و اسالم",
-    county: "تالش",
-    category: "جنگل و طبیعت",
-    price: "۱,۶۵۰,۰۰۰",
-    duration: "۲ روز و ۱ شب",
-    rating: 4.96,
-    reviewsCount: 220,
-    imageUrl:
-      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80",
-    highlight:
-      "گذر از دالان درختان کهنسال چسبیده به آسمان که ناگهان به امواج فیروزه‌ای دریای خزر ختم می‌شوند.",
-  },
+const POPULAR_TAGS = [
+  "ماسال",
+  "قلعه رودخان",
+  "ماسوله",
+  "لاهیجان",
+  "تالاب انزلی",
+  "سوباتان",
+  "رشت",
 ];
 
-const CATEGORIES = [
-  "همه",
-  "ییلاقات و کوهستان",
-  "جنگل و طبیعت",
-  "فرهنگی و تاریخی",
-  "ساحل و تالاب",
-  "مزارع و بوم‌گردی",
-] as const;
-
 export default function Hero() {
+  const router = useRouter();
+
+  // Search state
   const [query, setQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("همه");
-  const [activeDestination, setActiveDestination] = useState<GilanDestination>(
-    GILAN_DESTINATIONS[0],
-  );
   const [isOpen, setIsOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto Slider state for random tours in hero image holder
+  const [sliderTours, setSliderTours] = useState<Tour[]>(TOURS_DATA);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Randomize tours order on client mount without blocking SSR prerender
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSliderTours([...TOURS_DATA].sort(() => 0.5 - Math.random()));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Auto-slide effect (every 4.5 seconds if not hovered)
+  useEffect(() => {
+    if (isHovered || sliderTours.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sliderTours.length);
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, [isHovered, sliderTours.length]);
+
+  const activeTour = sliderTours[currentIndex] || TOURS_DATA[0];
+
+  const handleNextSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % sliderTours.length);
+  }, [sliderTours.length]);
+
+  const handlePrevSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + sliderTours.length) % sliderTours.length);
+  }, [sliderTours.length]);
 
   // Close search menu when clicking outside or pressing Escape
   useEffect(() => {
@@ -166,7 +90,6 @@ export default function Hero() {
 
   const handleSelectPopularTag = (tag: string) => {
     setQuery(tag);
-    setSelectedCategory("همه");
     setIsOpen(true);
   };
 
@@ -175,24 +98,28 @@ export default function Hero() {
     setIsOpen(false);
   };
 
+  // Navigate to detailed tour page
+  const handleSelectSearchResult = (tourId: string) => {
+    setIsOpen(false);
+    router.push(`/tours/${tourId}`);
+  };
+
   // Real-time filtering matching title, location, county, category, or highlight
-  const filteredDestinations = useMemo(() => {
+  const filteredTours = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
 
-    return GILAN_DESTINATIONS.filter((item) => {
-      const matchesCategory =
-        selectedCategory === "همه" || item.category === selectedCategory;
-      const matchesQuery =
+    return TOURS_DATA.filter((item) => {
+      return (
         item.title.toLowerCase().includes(q) ||
         item.location.toLowerCase().includes(q) ||
         item.county.toLowerCase().includes(q) ||
         item.category.toLowerCase().includes(q) ||
-        item.highlight.toLowerCase().includes(q);
-
-      return matchesCategory && matchesQuery;
+        item.highlight.toLowerCase().includes(q) ||
+        item.guide.name.toLowerCase().includes(q)
+      );
     });
-  }, [query, selectedCategory]);
+  }, [query]);
 
   const showLiveMenu = isOpen && query.trim().length > 0;
 
@@ -202,8 +129,9 @@ export default function Hero() {
       dir="rtl"
     >
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
+        
         {/* Right Side: Content + Live Search */}
-        <div className="flex flex-col justify-center py-2 sm:py-6 text-right">
+        <div className="flex flex-col justify-center py-2 sm:py-6 text-right order-2 lg:order-1">
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-zinc-950 leading-[1.25]">
             سفر رویایی‌ات به{" "}
@@ -243,8 +171,8 @@ export default function Hero() {
                 onFocus={() => {
                   if (query.trim().length > 0) setIsOpen(true);
                 }}
-                placeholder="جستجوی مقصد در گیلان (ماسال، قلعه رودخان، دیلمان، انزلی)..."
-                className="w-full pr-12 pl-10 py-4 bg-white rounded-2xl border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 text-base shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:border-transparent transition-all text-right"
+                placeholder="جستجوی مقصد یا تور در گیلان (ماسال، قلعه رودخان، ماسوله، دیلمان)..."
+                className="w-full pr-12 pl-10 py-4 bg-white rounded-2xl border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 text-sm sm:text-base shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:border-transparent transition-all text-right"
               />
 
               {query && (
@@ -271,87 +199,57 @@ export default function Hero() {
               )}
             </div>
 
-            {/* Live Search Menu */}
+            {/* Live Search Menu -> Clicking directly redirects to detail page to make reservation */}
             {showLiveMenu && (
-              <div className="absolute top-full left-0 right-0 mt-2 z-40 bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-200 shadow-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="absolute top-full left-0 right-0 mt-2 z-40 bg-white/98 backdrop-blur-md rounded-2xl border border-zinc-200 shadow-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-150">
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2 border-b border-zinc-100 px-1">
-                  <span className="text-xs font-semibold text-zinc-500">
-                    {filteredDestinations.length === 0
-                      ? `موردی برای «${query}» یافت نشد`
-                      : `${filteredDestinations.length} مقصد در گیلان برای «${query}»`}
+                  <span className="text-xs font-bold text-emerald-950">
+                    {filteredTours.length === 0
+                      ? `توری برای «${query}» یافت نشد`
+                      : `${filteredTours.length} تور اختصاصی گیلان یافت شد (برای مشاهده جزئیات و رزرو کلیک کنید)`}
                   </span>
                 </div>
 
                 {/* Filtered Results List */}
-                <div className="space-y-1.5 max-h-[300px] overflow-y-auto pl-1">
-                  {filteredDestinations.length > 0 ? (
-                    filteredDestinations.map((dest) => {
-                      const isSelected = activeDestination.id === dest.id;
+                <div className="space-y-1.5 max-h-[320px] overflow-y-auto pl-1">
+                  {filteredTours.length > 0 ? (
+                    filteredTours.map((dest) => {
                       return (
                         <div
                           key={dest.id}
-                          onClick={() => {
-                            setActiveDestination(dest);
-                          }}
-                          className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-emerald-900 text-white border-emerald-900 shadow-xs"
-                              : "bg-white text-zinc-800 border-zinc-100 hover:bg-zinc-50 hover:border-zinc-200"
-                          }`}
+                          onClick={() => handleSelectSearchResult(dest.id)}
+                          className="group flex items-center justify-between p-2.5 rounded-xl border border-zinc-100 bg-white hover:bg-emerald-50/80 hover:border-emerald-300 transition-all cursor-pointer"
+                          role="button"
+                          tabIndex={0}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <img
                               src={dest.imageUrl}
                               alt={dest.title}
-                              className="w-10 h-10 rounded-lg object-cover shrink-0"
+                              className="w-12 h-12 rounded-xl object-cover shrink-0 group-hover:scale-105 transition-transform"
                             />
                             <div className="min-w-0 text-right">
                               <div className="flex items-center gap-2">
-                                <h4
-                                  className={`text-xs font-bold truncate ${
-                                    isSelected ? "text-white" : "text-zinc-900"
-                                  }`}
-                                >
+                                <h4 className="text-xs sm:text-sm font-bold text-zinc-900 group-hover:text-emerald-950 truncate">
                                   {dest.title}
                                 </h4>
-                                <span
-                                  className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                                    isSelected
-                                      ? "bg-emerald-800 text-emerald-100"
-                                      : "bg-zinc-100 text-zinc-600"
-                                  }`}
-                                >
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 group-hover:bg-emerald-100 group-hover:text-emerald-900 shrink-0">
                                   {dest.county}
                                 </span>
                               </div>
-                              <p
-                                className={`text-[11px] truncate mt-0.5 ${
-                                  isSelected
-                                    ? "text-emerald-100"
-                                    : "text-zinc-500"
-                                }`}
-                              >
-                                📍 {dest.location} • {dest.duration}
+                              <p className="text-[11px] text-zinc-500 truncate mt-0.5">
+                                📍 {dest.location} • ⏱ {dest.duration} • راهنما: {dest.guide.name}
                               </p>
                             </div>
                           </div>
 
-                          <div className="text-left shrink-0 pr-2">
-                            <div
-                              className={`text-xs font-bold ${
-                                isSelected ? "text-white" : "text-zinc-900"
-                              }`}
-                            >
-                              {dest.price} تومان
+                          <div className="text-left shrink-0 pr-3 flex flex-col items-end">
+                            <div className="text-xs font-black text-emerald-950">
+                              {dest.priceFormatted} تومان
                             </div>
-                            <div
-                              className={`text-[10px] ${
-                                isSelected
-                                  ? "text-emerald-200"
-                                  : "text-zinc-500"
-                              }`}
-                            >
-                              ★ {dest.rating}
+                            <div className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md group-hover:bg-emerald-900 group-hover:text-white transition-colors">
+                              <span>رزرو آنلاین</span>
+                              <span className="rotate-180">←</span>
                             </div>
                           </div>
                         </div>
@@ -360,11 +258,10 @@ export default function Hero() {
                   ) : (
                     <div className="py-6 text-center text-zinc-500 text-xs">
                       <p className="font-medium text-zinc-700">
-                        مقصدی پیدا نشد.
+                        مقصدی با این عنوان پیدا نشد.
                       </p>
                       <p className="mt-1 text-zinc-400">
-                        عباراتی مثل «ماسال»، «ماسوله»، «قلعه رودخان»، «لاهیجان»
-                        یا «انزلی» را جستجو کنید.
+                        عباراتی مانند «ماسال»، «ماسوله»، «قلعه رودخان»، «سوباتان»، «لاهیجان» یا «رشت» را امتحان کنید.
                       </p>
                     </div>
                   )}
@@ -372,7 +269,9 @@ export default function Hero() {
 
                 {/* Footer hint */}
                 <div className="pt-2 mt-2 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400 px-1">
-                  <span>روی نتیجه کلیک کنید تا در تصویر پیش‌نمایش شود</span>
+                  <span className="text-emerald-800 font-medium">
+                    ⚡ با کلیک روی هر نتیجه، به صفحه جزئیات و رزرو آن هدایت می‌شوید
+                  </span>
                   <span>Esc برای بستن</span>
                 </div>
               </div>
@@ -384,14 +283,7 @@ export default function Hero() {
             <span className="font-semibold text-zinc-700">
               محبوب‌ترین مقاصد گیلان:
             </span>
-            {[
-              "ماسال",
-              "قلعه رودخان",
-              "ماسوله",
-              "لاهیجان",
-              "تالاب انزلی",
-              "دیلمان",
-            ].map((tag) => (
+            {POPULAR_TAGS.map((tag) => (
               <button
                 key={tag}
                 type="button"
@@ -432,69 +324,130 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Left Side: Destination Image Holder */}
-        <div className="relative h-[440px] sm:h-[520px] lg:h-[620px] w-full rounded-3xl overflow-hidden border border-zinc-200/80 shadow-xl group text-right">
+        {/* Left Side: Destination Image Holder with AUTO SLIDER of RANDOM TOURS */}
+        <div
+          className="relative h-[460px] sm:h-[530px] lg:h-[620px] w-full rounded-3xl overflow-hidden border border-zinc-200/80 shadow-2xl group text-right order-1 lg:order-2 select-none"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* Background Image with smooth transition */}
           <img
-            src={activeDestination.imageUrl}
-            alt={activeDestination.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            key={activeTour.id}
+            src={activeTour.imageUrl}
+            alt={activeTour.title}
+            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 animate-in fade-in zoom-in-95 duration-500"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/30 pointer-events-none" />
 
-          {/* Top Tag & Status */}
-          <div className="absolute top-5 left-5 right-5 flex items-center justify-between text-white">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              ظرفیت تورهای این هفته باز است
+          {/* Top Info Bar */}
+          <div className="absolute top-5 left-5 right-5 flex items-center justify-between text-white z-10">
+            {/* Auto-slider live badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-xs font-semibold">
+              <span className={`w-2 h-2 rounded-full ${isHovered ? "bg-amber-400" : "bg-emerald-400 animate-pulse"}`} />
+              <span>{isHovered ? "توقف خودکار (اسلاید در حال مشاهده)" : "تورهای پیشنهادی تصادفی گیلان"}</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-xs font-semibold">
-              <span>★ {activeDestination.rating}</span>
-              <span className="text-white/70">
-                ({activeDestination.reviewsCount} نظر)
+
+            {/* Rating badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-xs font-semibold">
+              <span className="text-amber-400">★ {activeTour.rating}</span>
+              <span className="text-white/80">
+                ({activeTour.reviewsCount} نظر)
               </span>
             </div>
           </div>
 
-          {/* Bottom Card Holder Info */}
-          <div className="absolute bottom-6 left-6 right-6 text-white space-y-3">
-            <div className="inline-block px-3 py-1 rounded-lg bg-emerald-700/80 backdrop-blur-md text-xs font-bold text-white border border-emerald-500/30">
-              {activeDestination.category} • استان گیلان (
-              {activeDestination.county})
+          {/* Slider Prev / Next Manual Arrows */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
+            <button
+              type="button"
+              onClick={handlePrevSlide}
+              aria-label="تور قبلی"
+              className="pointer-events-auto p-2.5 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleNextSlide}
+              aria-label="تور بعدی"
+              className="pointer-events-auto p-2.5 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 hover:scale-110 active:scale-95 transition-all cursor-pointer shadow-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Bottom Card Info & Direct Booking CTA */}
+          <div className="absolute bottom-6 left-6 right-6 text-white space-y-3 z-10">
+            {/* Category & Badge */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-block px-3 py-1 rounded-lg bg-emerald-700/90 backdrop-blur-md text-xs font-bold text-white border border-emerald-500/30">
+                {activeTour.category} • استان گیلان ({activeTour.county})
+              </span>
+              <span className="inline-block px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-md text-xs font-semibold text-emerald-200 border border-white/20">
+                ⏱ {activeTour.duration}
+              </span>
             </div>
 
-            <h3 className="text-2xl sm:text-3xl font-extrabold leading-snug drop-shadow-xs">
-              {activeDestination.title}
+            {/* Tour Title */}
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black leading-snug drop-shadow-md">
+              {activeTour.title}
             </h3>
 
+            {/* Short Highlight */}
             <p className="text-xs sm:text-sm text-zinc-200 line-clamp-2 max-w-lg font-normal leading-relaxed">
-              {activeDestination.highlight}
+              {activeTour.highlight}
             </p>
 
-            <div className="pt-3 flex items-center justify-between border-t border-white/20">
+            {/* Pricing & Link directly to Detail & Reservation Page */}
+            <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/20">
               <div>
-                <span className="text-xs text-zinc-300 block">
-                  شروع قیمت از
+                <span className="text-[11px] text-zinc-300 block">
+                  شروع قیمت تور از
                 </span>
-                <span className="text-2xl font-black text-white">
-                  {activeDestination.price}
+                <span className="text-xl sm:text-2xl font-black text-white">
+                  {activeTour.priceFormatted}
                   <span className="text-xs font-normal text-zinc-300 mr-1.5">
                     {" "}
-                    تومان / هر نفر
+                    تومان / هر مسافر
                   </span>
                 </span>
               </div>
 
+              {/* Direct Booking Redirect Button */}
               <Link
-                href="/tours"
-                className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-white text-zinc-950 font-bold text-xs sm:text-sm hover:bg-emerald-50 transition-all shadow-md active:scale-95 cursor-pointer"
+                href={`/tours/${activeTour.id}`}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-xs sm:text-sm transition-all shadow-lg hover:shadow-emerald-500/30 active:scale-95 cursor-pointer"
               >
-                <span>مشاهده تمام تورها</span>
+                <span>مشاهده جزئیات و رزرو آنلاین</span>
                 <span className="rotate-180">←</span>
               </Link>
             </div>
+
+            {/* Slider Dots Indicator */}
+            <div className="flex items-center justify-center gap-1.5 pt-2">
+              {sliderTours.map((t, idx) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    currentIndex === idx
+                      ? "w-7 bg-emerald-400"
+                      : "w-2 bg-white/40 hover:bg-white/70"
+                  }`}
+                  aria-label={`اسلاید ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
+
       </div>
     </section>
   );
